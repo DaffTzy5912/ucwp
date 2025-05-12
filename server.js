@@ -1,10 +1,10 @@
 const express = require("express");
+const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
-const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -23,10 +23,11 @@ function writeDB(data) {
 
 // Routes
 app.use("/api/auth", require("./routes/auth.routes"));
-app.use("/api/chats", require("./routes/chat.routes"));
 app.use("/api/contacts", require("./routes/contact.routes"));
+app.use("/api/chats", require("./routes/chat.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
 
+// Start server
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
