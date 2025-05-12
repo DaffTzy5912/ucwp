@@ -1,55 +1,68 @@
-
 const express = require("express");
 const app = express();
-const fs = require("fs");
-const http = require("http").Server(app);
+const http = require("http");
+const server = http.createServer(app);
 const WebSocket = require("ws");
-const wss = new WebSocket.Server({ server: http });
+const wss = new WebSocket.Server({ server });
+const fs = require("fs");
 
-app.use(express.json());
+let users = {}; // Simpan data user
+let sockets = {}; // Simpan WebSocket aktif
+
 app.use(express.static("public"));
+app.use(express.json());
 
-let users = {};
-let messages = [];
-
-if (fs.existsSync("server/db.json")) {
-  const data = JSON.parse(fs.readFileSync("server/db.json"));
-  users = data.users;
-  messages = data.messages;
-}
-
-app.get("/users", (req, res) => {
-  res.json(Object.values(users));
+// Endpoint cek user
+app.get("/api/user/:number", (req, res) => {
+  const number = req.params.number;
+  if (users[number]) {
+    res.json(users[number]);
+  } else {
+    res.status(404).json({ error: "Not found" });
+  }
 });
 
-app.get("/me", (req, res) => {
-  const user = users[req.query.number];
-  res.json(user || {});
+// Endpoint simpan kontak
+app.post("/api/user", (req, res) => {
+  const { number, name } = req.body;
+  users[number] = users[number] || {};
+  users[number].name = name;
+  res.json({ success: true });
 });
 
-app.post("/update", (req, res) => {
-  users[req.body.number] = req.body;
-  saveDB();
-  res.sendStatus(200);
-});
+wss.on("connection", (ws, req) => {
+  let userId = null;
 
-function saveDB() {
-  fs.writeFileSync("server/db.json", JSON.stringify({ users, messages }));
-}
-
-wss.on("connection", ws => {
-  ws.on("message", msg => {
+  ws.on("message", (msg) => {
     const data = JSON.parse(msg);
-    messages.push(data);
-    users[data.from] = users[data.from] || { number: data.from };
-    users[data.to] = users[data.to] || { number: data.to };
-    saveDB();
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(data));
+
+    if (data.type === "login") {
+      userId = data.number;
+      users[userId] = users[userId] || { name: "User " + userId };
+      users[userId].online = true;
+      sockets[userId] = ws;
+    }
+
+    if (data.type === "chat") {
+      const to = data.to;
+      if (sockets[to]) {
+        sockets[to].send(JSON.stringify({
+          from: userId,
+          message: data.message
+        }));
       }
-    });
+    }
+  });
+
+  ws.on("close", () => {
+    if (userId && users[userId]) {
+      users[userId].online = false;
+      delete sockets[userId];
+    }
   });
 });
 
-http.listen(3000, () => console.log("Server jalan di http://localhost:3000"));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
