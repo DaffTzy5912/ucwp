@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { readDB, writeDB } = require("../db.utils");
+const { readDB, writeDB } = require("../utils/db.utils");
 
 // Update profil
 router.put("/:userId", (req, res) => {
