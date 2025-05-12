@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login - ChatApp</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatApp</title>
 </head>
 <body>
-  <div class="login-container">
-    <h2>Masuk / Daftar</h2>
-    <button onclick="generateNumber()">Gunakan Nomor Acak</button>
-    <p>Nomor Anda: <span id="userNumber">-</span></p>
-    <button onclick="login()">Lanjut</button>
-  </div>
-  <script src="js/auth.js"></script>
+  <h1>ChatApp WhatsApp Clone</h1>
+  <form id="searchForm">
+    <input type="text" id="searchInput" placeholder="Cari nomor (max 6 digit)" maxlength="6">
+    <button type="submit">Mulai Chat</button>
+  </form>
+  <ul id="contactList"></ul>
+  <script src="js/main.js"></script>
 </body>
 </html>
