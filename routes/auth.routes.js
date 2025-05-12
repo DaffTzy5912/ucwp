@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { readDB, writeDB } = require("../db.utils");
+const { readDB, writeDB } = require("../utils/db.utils");
 
 // Register
 router.post("/register", (req, res) => {
     const { name, number } = req.body;
     const db = readDB();
 
-    if (db.users.some((u) => u.number === number)) {
+    if (db.users.some(u => u.number === number)) {
         return res.status(400).json({ error: "Nomor sudah terdaftar" });
     }
 
@@ -32,7 +32,7 @@ router.post("/register", (req, res) => {
 router.post("/login", (req, res) => {
     const { number } = req.body;
     const db = readDB();
-    const user = db.users.find((u) => u.number === number);
+    const user = db.users.find(u => u.number === number);
 
     if (!user) {
         return res.status(404).json({ error: "Pengguna tidak ditemukan" });
